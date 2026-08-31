@@ -1,4 +1,4 @@
-class Validador {
+class Validacao {
   /** Verifica se um e-mail tem formato válido */
   ehEmailValido(email) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -124,4 +124,4 @@ class Validador {
   }
 }
 
-module.exports = Validador;
+module.exports = Validacao;
