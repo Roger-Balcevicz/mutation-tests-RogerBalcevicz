@@ -98,4 +98,27 @@ describe("utilitarios", () => {
     expect(numero).toBeGreaterThanOrEqual(0);
     expect(numero).toBeLessThan(10);
   });
+
+  // Testes adicionados para matar os mutantes sobreviventes do Stryker
+  describe("mutation tests", () => {
+    afterEach(() => jest.restoreAllMocks());
+
+    test("deve multiplicar o aleatorio pelo maximo", () => {
+      const util = new Utilitarios();
+      jest.spyOn(Math, "random").mockReturnValue(0.5);
+
+      expect(util.gerarNumeroAleatorio(10)).toBe(5);
+    });
+
+    test("nao deve considerar string numerica como numero", () => {
+      expect(new Utilitarios().ehNumero("10")).toBe(false);
+    });
+
+    test("deve ignorar simbolos no palindromo e rejeitar texto comum", () => {
+      const util = new Utilitarios();
+
+      expect(util.ehPalindromo("a_b, a")).toBe(true);
+      expect(util.ehPalindromo("abc")).toBe(false);
+    });
+  });
 });

@@ -41,3 +41,50 @@ test("Substitui todas as ocorrências de uma substring", () => {
 test("Verifica se lança erro quando o alvo é vazio", () => {
     expect(() => textoUtils.substituirTudo("gato gato gato", "", "cachorro")).toThrow("O alvo não pode ser vazio")
 })
+
+// Testes adicionados para matar os mutantes sobreviventes do Stryker
+describe("textoUtils - mutation tests", () => {
+    test("Inverte o texto", () => {
+        expect(textoUtils.inverter("abc")).toStrictEqual("cba")
+    })
+
+    test("Palindromo ignora pontuacao e caixa, e rejeita texto comum", () => {
+        expect(textoUtils.ehPalindromo("A, b a!")).toStrictEqual(true)
+        expect(textoUtils.ehPalindromo("abc")).toStrictEqual(false)
+    })
+
+    test("Capitaliza mantendo espacos duplos", () => {
+        expect(textoUtils.capitalizar("ana  maria")).toStrictEqual("Ana  Maria")
+    })
+
+    test("Retorna zero quando a substring e vazia", () => {
+        expect(textoUtils.contarOcorrencias("abc", "")).toStrictEqual(0)
+    })
+
+    test("Remove espacos no inicio e no fim", () => {
+        expect(textoUtils.removerEspacosExtras("  a  b  ")).toStrictEqual("a b")
+    })
+
+    test("Gera slug removendo acentos, pontuacao e espacos repetidos", () => {
+        expect(textoUtils.paraSlug("  Olá, Mundo  Novo! ")).toStrictEqual("ola-mundo-novo")
+    })
+
+    test("Trunca o texto respeitando o limite", () => {
+        expect(textoUtils.truncar("abc", 0)).toStrictEqual("...")
+        expect(textoUtils.truncar("abcdef", 3)).toStrictEqual("abc...")
+        expect(textoUtils.truncar("abc", 3)).toStrictEqual("abc")
+        expect(textoUtils.truncar("abc", 5)).toStrictEqual("abc")
+    })
+
+    test("Conta palavras com espacos extras e texto vazio", () => {
+        expect(textoUtils.contarPalavras("  um   dois  ")).toStrictEqual(2)
+        expect(textoUtils.contarPalavras("")).toStrictEqual(0)
+    })
+
+    test("Aceita somente letras, inclusive acentuadas", () => {
+        expect(textoUtils.somenteLetras("José")).toStrictEqual(true)
+        expect(textoUtils.somenteLetras("ab")).toStrictEqual(true)
+        expect(textoUtils.somenteLetras("abc1")).toStrictEqual(false)
+        expect(textoUtils.somenteLetras("1abc")).toStrictEqual(false)
+    })
+})

@@ -105,4 +105,17 @@ describe("banco", () => {
     // Assert
     expect(totalDepositado).toBe(30);
   });
+
+  // Testes adicionados para matar os mutantes sobreviventes do Stryker
+  test("deve iniciar sem transacoes", () => {
+    const conta = new Banco("Conta A", 100);
+
+    expect(conta.obterHistorico()).toEqual([]);
+  });
+
+  test("deve permitir sacar exatamente o saldo", () => {
+    const conta = new Banco("Conta A", 100);
+
+    expect(conta.sacar(100)).toBe(0);
+  });
 });

@@ -116,4 +116,80 @@ describe('Validacao', () => {
     expect(dataPassada).toBe(true);
     expect(dataNaoPassada).toBe(false);
   });
+
+  // Testes adicionados para matar os mutantes sobreviventes do Stryker
+  describe("mutation tests", () => {
+    const validacao = new Validacao();
+
+    afterEach(() => jest.restoreAllMocks());
+
+    test("deve rejeitar e-mail com texto antes ou depois", () => {
+      expect(validacao.ehEmailValido("a b@exemplo.com")).toBe(false);
+      expect(validacao.ehEmailValido("a@exemplo.com b")).toBe(false);
+    });
+
+    test("deve exigir todos os requisitos da senha forte", () => {
+      expect(validacao.ehSenhaForte("Ab1!")).toBe(false);
+      expect(validacao.ehSenhaForte("abcdef1!")).toBe(false);
+      expect(validacao.ehSenhaForte("ABCDEF1!")).toBe(false);
+      expect(validacao.ehSenhaForte("Abcdefg!")).toBe(false);
+      expect(validacao.ehSenhaForte("Abcdefg1")).toBe(false);
+    });
+
+    test("deve validar CEP com e sem hifen", () => {
+      expect(validacao.ehCepValido("12345678")).toBe(true);
+      expect(validacao.ehCepValido("12345-6789")).toBe(false);
+      expect(validacao.ehCepValido("012345-678")).toBe(false);
+    });
+
+    test("deve validar telefone sem mascara e rejeitar sobras", () => {
+      expect(validacao.ehTelefoneValido("11912345678")).toBe(true);
+      expect(validacao.ehTelefoneValido("(11) 91234-56789")).toBe(false);
+      expect(validacao.ehTelefoneValido("a(11) 91234-5678")).toBe(false);
+    });
+
+    test("deve tratar zero nos limites de positivo e negativo", () => {
+      expect(validacao.ehPositivo(0)).toBe(false);
+      expect(validacao.ehPositivo(-1)).toBe(false);
+      expect(validacao.ehNegativo(0)).toBe(false);
+      expect(validacao.ehNegativo(5)).toBe(false);
+    });
+
+    test("deve incluir os extremos do intervalo", () => {
+      expect(validacao.estaNoIntervalo(1, 1, 10)).toBe(true);
+      expect(validacao.estaNoIntervalo(10, 1, 10)).toBe(true);
+      expect(validacao.estaNoIntervalo(0, 1, 10)).toBe(false);
+    });
+
+    test("deve considerar a data atual nem futura nem passada", () => {
+      const agora = "2024-01-01T00:00:00.000Z";
+      jest.spyOn(Date, "now").mockReturnValue(new Date(agora).getTime());
+
+      expect(validacao.ehDataFutura(agora)).toBe(false);
+      expect(validacao.ehDataPassada(agora)).toBe(false);
+    });
+
+    test("deve identificar numero que nao e multiplo", () => {
+      expect(validacao.ehMultiploDe(10, 3)).toBe(false);
+    });
+
+    test("deve rejeitar zero e decimais como potencia de dois", () => {
+      expect(validacao.ehPotenciaDeDois(1)).toBe(true);
+      expect(validacao.ehPotenciaDeDois(0)).toBe(false);
+      expect(validacao.ehPotenciaDeDois(2.5)).toBe(false);
+    });
+
+    test("deve validar cor hexadecimal curta e rejeitar sobras", () => {
+      expect(validacao.ehCorHexValida("#FFF")).toBe(true);
+      expect(validacao.ehCorHexValida("#F")).toBe(false);
+      expect(validacao.ehCorHexValida("#FF00FF0")).toBe(false);
+      expect(validacao.ehCorHexValida("x#FFF")).toBe(false);
+    });
+
+    test("deve validar CPF sem mascara e rejeitar sobras", () => {
+      expect(validacao.ehCpfFormatoValido("12345678900")).toBe(true);
+      expect(validacao.ehCpfFormatoValido("a123.456.789-00")).toBe(false);
+      expect(validacao.ehCpfFormatoValido("123.456.789-001")).toBe(false);
+    });
+  });
 });

@@ -209,4 +209,69 @@ describe("conta bancaria", () => {
     expect(conta.obterLimite()).toBe(0);
     expect(conta.obterStatus()).toBe("ativa");
   });
+
+  // Testes adicionados para matar os mutantes sobreviventes do Stryker
+  describe("mutation tests", () => {
+    afterEach(() => jest.restoreAllMocks());
+
+    test("deve permitir sacar exatamente o saldo disponivel", () => {
+      const conta = new ContaBancaria(criarContaBase());
+
+      expect(conta.podeSacar(150)).toBe(true);
+      expect(conta.podeSacar(151)).toBe(false);
+      expect(conta.podeSacar(0)).toBe(false);
+      expect(conta.sacar(150)).toBe(true);
+      expect(conta.obterSaldo()).toBe(-50);
+    });
+
+    test("deve indicar conta inativa quando bloqueada", () => {
+      const conta = new ContaBancaria({ ...criarContaBase(), status: "bloqueada" });
+
+      expect(conta.estaAtiva()).toBe(false);
+    });
+
+    test("deve aceitar limite zero", () => {
+      const conta = new ContaBancaria(criarContaBase());
+
+      expect(conta.ajustarLimite(0)).toBe(true);
+      expect(conta.obterLimite()).toBe(0);
+    });
+
+    test("nao deve considerar saldo zero ou positivo como negativo", () => {
+      expect(new ContaBancaria(criarContaBase()).saldoNegativo()).toBe(false);
+      expect(new ContaBancaria({ ...criarContaBase(), saldo: 0 }).saldoNegativo()).toBe(false);
+    });
+
+    test("nao deve transferir quando podeSacar retorna false", () => {
+      const origem = new ContaBancaria(criarContaBase());
+      const destino = new ContaBancaria(criarContaBase());
+      jest.spyOn(origem, "podeSacar").mockReturnValue(false);
+
+      expect(origem.transferir(10, destino)).toBe(false);
+      expect(origem.obterSaldo()).toBe(100);
+      expect(destino.obterSaldo()).toBe(100);
+    });
+
+    test("nao deve depositar no destino quando o saque falha", () => {
+      const origem = new ContaBancaria(criarContaBase());
+      const destino = new ContaBancaria(criarContaBase());
+      jest.spyOn(origem, "sacar").mockReturnValue(false);
+
+      expect(origem.transferir(10, destino)).toBe(false);
+      expect(destino.obterSaldo()).toBe(100);
+    });
+
+    test("deve invalidar cada campo da conta separadamente", () => {
+      const validar = (alteracao) =>
+        new ContaBancaria({ ...criarContaBase(), ...alteracao }).validarConta();
+
+      expect(validar({ titular: "" })).toBe(false);
+      expect(validar({ saldo: "100" })).toBe(false);
+      expect(validar({ limite: -1 })).toBe(false);
+      expect(validar({ status: "inativa" })).toBe(false);
+      expect(validar({ limite: 0 })).toBe(true);
+      expect(validar({ status: "bloqueada" })).toBe(true);
+      expect(validar({ status: "encerrada" })).toBe(true);
+    });
+  });
 });
